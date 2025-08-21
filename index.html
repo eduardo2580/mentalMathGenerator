@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Math Generator</title>
+    <meta name="description" content="Practice mental math with random problems. Available in English, Portuguese, and Spanish.">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 40px 30px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .lang-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .problem {
+            text-align: center;
+            font-size: 48px;
+            font-weight: 700;
+            margin: 40px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .success { color: var(--success); }
+        .danger { color: var(--danger); }
+
+        .answer-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .answer-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .settings {
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .setting {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .setting label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .setting select, .setting input {
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .operations {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .op-btn {
+            padding: 8px 12px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .op-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .problem {
+                font-size: 36px;
+            }
+            
+            .lang-selector {
+                position: static;
+                margin-bottom: 20px;
+                width: 100%;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <select class="lang-selector" id="langSelector">
+        <option value="en">English</option>
+        <option value="pt">Português</option>
+        <option value="es">Español</option>
+    </select>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="title" id="title">Mental Math Generator</h1>
+            <p class="subtitle" id="subtitle">Practice quick mental calculations</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value success" id="correctCount">0</div>
+                <div class="stat-label" id="correctLabel">Correct</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label" id="totalLabel">Total</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value danger" id="wrongCount">0</div>
+                <div class="stat-label" id="wrongLabel">Wrong</div>
+            </div>
+        </div>
+
+        <div class="problem" id="problem">Click "New Problem" to start</div>
+
+        <div class="answer-section">
+            <input type="number" class="answer-input" id="answerInput" placeholder="Your answer">
+            <button class="btn btn-primary" id="submitBtn">Submit</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="newProblemBtn">New Problem</button>
+            <button class="btn btn-secondary" id="skipBtn">Skip</button>
+            <button class="btn btn-secondary" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="settings">
+            <div class="settings-grid">
+                <div class="setting">
+                    <label id="rangeLabel">Number Range</label>
+                    <select id="rangeSelect">
+                        <option value="10">1-10</option>
+                        <option value="50">1-50</option>
+                        <option value="100" selected>1-100</option>
+                        <option value="500">1-500</option>
+                        <option value="1000">1-1000</option>
+                    </select>
+                </div>
+                <div class="setting">
+                    <label id="termsLabel">Terms</label>
+                    <select id="termsSelect">
+                        <option value="2" selected>2 terms</option>
+                        <option value="3">3 terms</option>
+                        <option value="4">4 terms</option>
+                    </select>
+                </div>
+                <div class="setting">
+                    <label id="negativeLabel">Negative Numbers</label>
+                    <select id="negativeSelect">
+                        <option value="false" selected>Positive only</option>
+                        <option value="true">Allow negative</option>
+                    </select>
+                </div>
+            </div>
+            <div class="setting">
+                <label id="operationsLabel">Operations</label>
+                <div class="operations">
+                    <button class="op-btn active" data-op="+" id="addBtn">+</button>
+                    <button class="op-btn active" data-op="-" id="subBtn">−</button>
+                    <button class="op-btn active" data-op="*" id="mulBtn">×</button>
+                    <button class="op-btn" data-op="/" id="divBtn">÷</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Translations
+        const translations = {
+            en: {
+                title: "Mental Math Generator",
+                subtitle: "Practice quick mental calculations",
+                correctLabel: "Correct",
+                totalLabel: "Total",
+                wrongLabel: "Wrong",
+                yourAnswer: "Your answer",
+                submit: "Submit",
+                newProblem: "New Problem",
+                skip: "Skip",
+                reset: "Reset",
+                rangeLabel: "Number Range",
+                termsLabel: "Terms",
+                negativeLabel: "Negative Numbers",
+                operationsLabel: "Operations",
+                positiveOnly: "Positive only",
+                allowNegative: "Allow negative",
+                terms2: "2 terms",
+                terms3: "3 terms",
+                terms4: "4 terms",
+                clickToStart: "Click \"New Problem\" to start",
+                correct: "Correct! ✓",
+                wrong: "Wrong! The answer was"
+            },
+            pt: {
+                title: "Gerador de Matemática Mental",
+                subtitle: "Pratique cálculos mentais rápidos",
+                correctLabel: "Corretas",
+                totalLabel: "Total",
+                wrongLabel: "Erradas",
+                yourAnswer: "Sua resposta",
+                submit: "Confirmar",
+                newProblem: "Novo Problema",
+                skip: "Pular",
+                reset: "Reiniciar",
+                rangeLabel: "Faixa de Números",
+                termsLabel: "Termos",
+                negativeLabel: "Números Negativos",
+                operationsLabel: "Operações",
+                positiveOnly: "Apenas positivos",
+                allowNegative: "Permitir negativos",
+                terms2: "2 termos",
+                terms3: "3 termos",
+                terms4: "4 termos",
+                clickToStart: "Clique em \"Novo Problema\" para começar",
+                correct: "Correto! ✓",
+                wrong: "Errado! A resposta era"
+            },
+            es: {
+                title: "Generador de Matemáticas Mentales",
+                subtitle: "Practica cálculos mentales rápidos",
+                correctLabel: "Correctas",
+                totalLabel: "Total",
+                wrongLabel: "Incorrectas",
+                yourAnswer: "Tu respuesta",
+                submit: "Confirmar",
+                newProblem: "Nuevo Problema",
+                skip: "Saltar",
+                reset: "Reiniciar",
+                rangeLabel: "Rango de Números",
+                termsLabel: "Términos",
+                negativeLabel: "Números Negativos",
+                operationsLabel: "Operaciones",
+                positiveOnly: "Solo positivos",
+                allowNegative: "Permitir negativos",
+                terms2: "2 términos",
+                terms3: "3 términos",
+                terms4: "4 términos",
+                clickToStart: "Haz clic en \"Nuevo Problema\" para empezar",
+                correct: "¡Correcto! ✓",
+                wrong: "¡Incorrecto! La respuesta era"
+            }
+        };
+
+        // App state
+        let currentLang = 'en';
+        let currentProblem = null;
+        let stats = { correct: 0, wrong: 0, total: 0 };
+        let settings = {
+            range: 100,
+            terms: 2,
+            allowNegative: false,
+            operations: ['+', '-', '*']
+        };
+
+        // DOM elements
+        const elements = {
+            langSelector: document.getElementById('langSelector'),
+            title: document.getElementById('title'),
+            subtitle: document.getElementById('subtitle'),
+            correctCount: document.getElementById('correctCount'),
+            totalCount: document.getElementById('totalCount'),
+            wrongCount: document.getElementById('wrongCount'),
+            correctLabel: document.getElementById('correctLabel'),
+            totalLabel: document.getElementById('totalLabel'),
+            wrongLabel: document.getElementById('wrongLabel'),
+            problem: document.getElementById('problem'),
+            answerInput: document.getElementById('answerInput'),
+            submitBtn: document.getElementById('submitBtn'),
+            newProblemBtn: document.getElementById('newProblemBtn'),
+            skipBtn: document.getElementById('skipBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            rangeSelect: document.getElementById('rangeSelect'),
+            termsSelect: document.getElementById('termsSelect'),
+            negativeSelect: document.getElementById('negativeSelect'),
+            rangeLabel: document.querySelector('label[for="rangeSelect"]'),
+            termsLabel: document.querySelector('label[for="termsSelect"]'),
+            negativeLabel: document.querySelector('label[for="negativeSelect"]'),
+            operationsLabel: document.getElementById('operationsLabel'),
+            opBtns: document.querySelectorAll('.op-btn')
+        };
+
+        // Utility functions
+        function t(key) {
+            return translations[currentLang][key] || key;
+        }
+
+        function random(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function updateUI() {
+            elements.title.textContent = t('title');
+            elements.subtitle.textContent = t('subtitle');
+            elements.correctLabel.textContent = t('correctLabel');
+            elements.totalLabel.textContent = t('totalLabel');
+            elements.wrongLabel.textContent = t('wrongLabel');
+            elements.answerInput.placeholder = t('yourAnswer');
+            elements.submitBtn.textContent = t('submit');
+            elements.newProblemBtn.textContent = t('newProblem');
+            elements.skipBtn.textContent = t('skip');
+            elements.resetBtn.textContent = t('reset');
+            elements.rangeLabel.textContent = t('rangeLabel');
+            elements.termsLabel.textContent = t('termsLabel');
+            elements.negativeLabel.textContent = t('negativeLabel');
+            elements.operationsLabel.textContent = t('operationsLabel');
+
+            // Update select options
+            elements.negativeSelect.options[0].textContent = t('positiveOnly');
+            elements.negativeSelect.options[1].textContent = t('allowNegative');
+            elements.termsSelect.options[0].textContent = t('terms2');
+            elements.termsSelect.options[1].textContent = t('terms3');
+            elements.termsSelect.options[2].textContent = t('terms4');
+
+            if (!currentProblem) {
+                elements.problem.textContent = t('clickToStart');
+            }
+        }
+
+        function updateStats() {
+            elements.correctCount.textContent = stats.correct;
+            elements.wrongCount.textContent = stats.wrong;
+            elements.totalCount.textContent = stats.total;
+        }
+
+        function generateProblem() {
+            const nums = [];
+            const ops = [];
+            
+            // Generate numbers
+            for (let i = 0; i < settings.terms; i++) {
+                let num = random(1, settings.range);
+                if (settings.allowNegative && Math.random() < 0.3) {
+                    num = -num;
+                }
+                nums.push(num);
+            }
+
+            // Generate operations
+            for (let i = 0; i < settings.terms - 1; i++) {
+                ops.push(settings.operations[random(0, settings.operations.length - 1)]);
+            }
+
+            // Handle division to ensure integer results
+            for (let i = 0; i < ops.length; i++) {
+                if (ops[i] === '/') {
+                    const divisor = Math.max(1, Math.abs(nums[i + 1]));
+                    const multiplier = random(1, Math.floor(settings.range / divisor));
+                    nums[i] = divisor * multiplier * (nums[i] < 0 ? -1 : 1);
+                }
+            }
+
+            // Build expression and calculate result
+            let expression = nums[0].toString();
+            let result = nums[0];
+
+            for (let i = 0; i < ops.length; i++) {
+                const op = ops[i];
+                const num = nums[i + 1];
+                expression += ` ${op === '*' ? '×' : op === '/' ? '÷' : op} ${num}`;
+                
+                switch (op) {
+                    case '+': result += num; break;
+                    case '-': result -= num; break;
+                    case '*': result *= num; break;
+                    case '/': result /= num; break;
+                }
+            }
+
+            return { expression, result: Math.round(result) };
+        }
+
+        function newProblem() {
+            if (settings.operations.length === 0) {
+                alert('Please select at least one operation!');
+                return;
+            }
+
+            currentProblem = generateProblem();
+            elements.problem.textContent = currentProblem.expression;
+            elements.answerInput.value = '';
+            elements.answerInput.focus();
+        }
+
+        function submitAnswer() {
+            if (!currentProblem) return;
+
+            const userAnswer = parseInt(elements.answerInput.value);
+            if (isNaN(userAnswer)) return;
+
+            stats.total++;
+            
+            if (userAnswer === currentProblem.result) {
+                stats.correct++;
+                elements.problem.textContent = t('correct');
+                elements.problem.style.color = '#10b981';
+            } else {
+                stats.wrong++;
+                elements.problem.textContent = `${t('wrong')}: ${currentProblem.result}`;
+                elements.problem.style.color = '#ef4444';
+            }
+
+            updateStats();
+            
+            setTimeout(() => {
+                elements.problem.style.color = '#f8fafc';
+                newProblem();
+            }, 2000);
+        }
+
+        function skipProblem() {
+            if (currentProblem) {
+                newProblem();
+            }
+        }
+
+        function resetStats() {
+            stats = { correct: 0, wrong: 0, total: 0 };
+            updateStats();
+            currentProblem = null;
+            elements.problem.textContent = t('clickToStart');
+        }
+
+        function updateSettings() {
+            settings.range = parseInt(elements.rangeSelect.value);
+            settings.terms = parseInt(elements.termsSelect.value);
+            settings.allowNegative = elements.negativeSelect.value === 'true';
+            
+            settings.operations = Array.from(elements.opBtns)
+                .filter(btn => btn.classList.contains('active'))
+                .map(btn => btn.dataset.op);
+        }
+
+        // Event listeners
+        elements.langSelector.addEventListener('change', (e) => {
+            currentLang = e.target.value;
+            updateUI();
+        });
+
+        elements.newProblemBtn.addEventListener('click', () => {
+            updateSettings();
+            newProblem();
+        });
+
+        elements.submitBtn.addEventListener('click', submitAnswer);
+
+        elements.answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitAnswer();
+            }
+        });
+
+        elements.skipBtn.addEventListener('click', skipProblem);
+        elements.resetBtn.addEventListener('click', resetStats);
+
+        elements.rangeSelect.addEventListener('change', updateSettings);
+        elements.termsSelect.addEventListener('change', updateSettings);
+        elements.negativeSelect.addEventListener('change', updateSettings);
+
+        elements.opBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                updateSettings();
+            });
+        });
+
+        // Initialize
+        updateUI();
+        updateStats();
+    </script>
+</body>
+</html>
