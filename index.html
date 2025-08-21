@@ -352,7 +352,10 @@
                 terms4: "4 terms",
                 clickToStart: "Click \"New Problem\" to start",
                 correct: "Correct! ✓",
-                wrong: "Wrong! The answer was"
+                wrong: "Wrong! The answer was",
+                selectOperation: "Please select at least one operation!",
+                pageTitle: "Mental Math Generator",
+                pageDescription: "Practice mental math with random problems. Available in English, Portuguese, and Spanish."
             },
             pt: {
                 title: "Gerador de Matemática Mental",
@@ -376,7 +379,10 @@
                 terms4: "4 termos",
                 clickToStart: "Clique em \"Novo Problema\" para começar",
                 correct: "Correto! ✓",
-                wrong: "Errado! A resposta era"
+                wrong: "Errado! A resposta era",
+                selectOperation: "Por favor, selecione pelo menos uma operação!",
+                pageTitle: "Gerador de Matemática Mental",
+                pageDescription: "Pratique matemática mental com problemas aleatórios. Disponível em Inglês, Português e Espanhol."
             },
             es: {
                 title: "Generador de Matemáticas Mentales",
@@ -400,7 +406,10 @@
                 terms4: "4 términos",
                 clickToStart: "Haz clic en \"Nuevo Problema\" para empezar",
                 correct: "¡Correcto! ✓",
-                wrong: "¡Incorrecto! La respuesta era"
+                wrong: "¡Incorrecto! La respuesta era",
+                selectOperation: "¡Por favor, selecciona al menos una operación!",
+                pageTitle: "Generador de Matemáticas Mentales",
+                pageDescription: "Practica matemáticas mentales con problemas aleatorios. Disponible en Inglés, Portugués y Español."
             }
         };
 
@@ -435,9 +444,9 @@
             rangeSelect: document.getElementById('rangeSelect'),
             termsSelect: document.getElementById('termsSelect'),
             negativeSelect: document.getElementById('negativeSelect'),
-            rangeLabel: document.querySelector('label[for="rangeSelect"]'),
-            termsLabel: document.querySelector('label[for="termsSelect"]'),
-            negativeLabel: document.querySelector('label[for="negativeSelect"]'),
+            rangeLabel: document.getElementById('rangeLabel'),
+            termsLabel: document.getElementById('termsLabel'),
+            negativeLabel: document.getElementById('negativeLabel'),
             operationsLabel: document.getElementById('operationsLabel'),
             opBtns: document.querySelectorAll('.op-btn')
         };
@@ -452,6 +461,10 @@
         }
 
         function updateUI() {
+            // Update page title and meta description
+            document.title = t('pageTitle');
+            document.querySelector('meta[name="description"]').content = t('pageDescription');
+            
             elements.title.textContent = t('title');
             elements.subtitle.textContent = t('subtitle');
             elements.correctLabel.textContent = t('correctLabel');
@@ -534,7 +547,7 @@
 
         function newProblem() {
             if (settings.operations.length === 0) {
-                alert('Please select at least one operation!');
+                alert(t('selectOperation'));
                 return;
             }
 
@@ -596,6 +609,8 @@
         // Event listeners
         elements.langSelector.addEventListener('change', (e) => {
             currentLang = e.target.value;
+            // Update HTML lang attribute
+            document.documentElement.lang = currentLang;
             updateUI();
         });
 
